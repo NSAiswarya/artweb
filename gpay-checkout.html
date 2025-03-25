@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Pay Checkout</title>
+    <script src="https://pay.google.com/gp/p/js/pay.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        #gpay-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Checkout with Google Pay</h2>
+        <p><strong>Item:</strong> Abstract Drawing</p>
+        <p><strong>Price:</strong> $100</p>
+        <div id="gpay-button"></div>
+    </div>
+
+    <script>
+        function onGooglePayLoaded() {
+            const paymentsClient = new google.payments.api.PaymentsClient({ environment: 'TEST' });
+
+            const paymentDataRequest = {
+                apiVersion: 2,
+                apiVersionMinor: 0,
+                allowedPaymentMethods: [{
+                    type: 'CARD',
+                    parameters: {
+                        allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                        allowedCardNetworks: ['MASTERCARD', 'VISA']
+                    },
+                    tokenizationSpecification: {
+                        type: 'PAYMENT_GATEWAY',
+                        parameters: {
+                            gateway: 'example',  // Replace with actual gateway like 'stripe', 'razorpay'
+                            gatewayMerchantId: 'exampleMerchantId'
+                        }
+                    }
+                }],
+                merchantInfo: {
+                    merchantId: 'BCR2DN4T2F2XYF45', // Replace with your merchant ID
+                    merchantName: 'Your Art Gallery'
+                },
+                transactionInfo: {
+                    totalPriceStatus: 'FINAL',
+                    totalPrice: '100.00',
+                    currencyCode: 'USD'
+                }
+            };
+
+            const googlePayButton = paymentsClient.createButton({
+                onClick: () => paymentsClient.loadPaymentData(paymentDataRequest)
+                    .then(paymentData => {
+                        console.log('Payment Success', paymentData);
+                        alert('Payment Successful! Thank you for your purchase.');
+                    })
+                    .catch(error => {
+                        console.error('Payment Failed', error);
+                        alert('Payment failed. Please try again.');
+                    })
+            });
+
+            document.getElementById('gpay-button').appendChild(googlePayButton);
+        }
+        
+        window.onload = onGooglePayLoaded;
+    </script>
+
+</body>
+</html>
